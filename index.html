@@ -94,11 +94,11 @@
         if (lastY !== null) {
           const diff = y - lastY;
 
-          if (diff > 0.015) {
+          if (diff > 0.005) {
             window.scrollBy(0, scrollSpeed);
             indicator.innerHTML = "⬇️";
           } 
-          else if (diff < -0.015) {
+          else if (diff < -0.005) {
             window.scrollBy(0, -scrollSpeed);
             indicator.innerHTML = "⬆️";
           } 
