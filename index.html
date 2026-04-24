@@ -75,10 +75,10 @@
     let scrollSpeed = 60;
 
     const hands = new Hands({
-      locateFile: (file) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-      }
-    });
+  locateFile: (file) => {
+    return `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`;
+  }
+});
 
     hands.setOptions({
       maxNumHands: 1,
@@ -87,9 +87,10 @@
     });
 
     hands.onResults(results => {
-      if (results.multiHandLandmarks.length > 0) {
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
         const hand = results.multiHandLandmarks[0];
         const y = hand[9].y; // ponto central da mão
+      console.log(results);
 
         if (lastY !== null) {
           const diff = y - lastY;
