@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Scroll com a mão</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- MediaPipe -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      height: 3000px;
+      background: linear-gradient(#0f2027, #203a43, #2c5364);
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 50px;
+    }
+
+    .camera-box {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 140px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid white;
+      z-index: 1000;
+    }
+
+    video {
+      width: 100%;
+    }
+
+    .status {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .indicator {
+      font-size: 40px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>📱 Scroll com a mão</h1>
+  <p>Levante ou desça a mão para rolar a página</p>
+
+  <div class="camera-box">
+    <video id="video" autoplay playsinline></video>
+  </div>
+
+  <div class="status">
+    Movimento:
+    <div class="indicator" id="indicator">-</div>
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const indicator = document.getElementById('indicator');
+
+    let lastY = null;
+    let scrollSpeed = 25;
+
+    const hands = new Hands({
+      locateFile: (file) => {
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+      }
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.7
+    });
+
+    hands.onResults(results => {
+      if (results.multiHandLandmarks.length > 0) {
+        const hand = results.multiHandLandmarks[0];
+        const y = hand[9].y; // ponto central da mão
+
+        if (lastY !== null) {
+          const diff = y - lastY;
+
+          if (diff > 0.015) {
+            window.scrollBy(0, scrollSpeed);
+            indicator.innerHTML = "⬇️";
+          } 
+          else if (diff < -0.015) {
+            window.scrollBy(0, -scrollSpeed);
+            indicator.innerHTML = "⬆️";
+          } 
+          else {
+            indicator.innerHTML = "✋";
+          }
+        }
+
+        lastY = y;
+      } else {
+        indicator.innerHTML = "❌";
+      }
+    });
+
+    const camera = new Camera(video, {
+      onFrame: async () => {
+        await hands.send({ image: video });
+      },
+      width: 640,
+      height: 480
+    });
+
+    camera.start();
+  </script>
+
+</body>
+</html>
