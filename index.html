@@ -68,62 +68,62 @@
   </div>
 
   <script>
-    const video = document.getElementById('video');
-    const indicator = document.getElementById('indicator');
+const video = document.getElementById('video');
+const indicator = document.getElementById('indicator');
 
-    let lastY = null;
-    let scrollSpeed = 60;
+let lastY = null;
 
-    const hands = new Hands({
+const hands = new Hands({
   locateFile: (file) => {
     return `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`;
   }
 });
 
-    hands.setOptions({
-      maxNumHands: 1,
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.7
-    });
+hands.setOptions({
+  maxNumHands: 1,
+  modelComplexity: 0, // 🔥 MAIS LEVE
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+});
 
-    hands.onResults(results => {
-    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-        const hand = results.multiHandLandmarks[0];
-        const y = hand[9].y; // ponto central da mão
-      console.log(results);
+hands.onResults(results => {
+  if (!results.multiHandLandmarks) {
+    indicator.innerHTML = "❌";
+    return;
+  }
 
-        if (lastY !== null) {
-          const diff = y - lastY;
+  const hand = results.multiHandLandmarks[0];
+  const y = hand[9].y;
 
-          if (diff > 0.005) {
-            window.scrollBy(0, scrollSpeed);
-            indicator.innerHTML = "⬇️";
-          } 
-          else if (diff < -0.005) {
-            window.scrollBy(0, -scrollSpeed);
-            indicator.innerHTML = "⬆️";
-          } 
-          else {
-            indicator.innerHTML = "✋";
-          }
-        }
+  if (lastY !== null) {
+    const diff = y - lastY;
 
-        lastY = y;
-      } else {
-        indicator.innerHTML = "❌";
-      }
-    });
+    if (diff > 0.01) {
+      window.scrollBy(0, 40);
+      indicator.innerHTML = "⬇️";
+    } 
+    else if (diff < -0.01) {
+      window.scrollBy(0, -40);
+      indicator.innerHTML = "⬆️";
+    } 
+    else {
+      indicator.innerHTML = "✋";
+    }
+  }
 
-    const camera = new Camera(video, {
-      onFrame: async () => {
-        await hands.send({ image: video });
-      },
-      width: 640,
-      height: 480
-    });
+  lastY = y;
+});
 
-    camera.start();
-  </script>
+const camera = new Camera(video, {
+  onFrame: async () => {
+    await hands.send({ image: video });
+  },
+  width: 320,  // 🔥 menor resolução
+  height: 240
+});
+
+camera.start();
+    </script>
 
 </body>
 </html>
